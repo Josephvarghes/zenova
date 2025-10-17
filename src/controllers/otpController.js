@@ -2,6 +2,7 @@ import Otp from '../models/otpModel';
 import User from '../models/userModel';
 import { generateAndStoreOtp } from '../utils/otp.js';
 import { sendOtpEmail } from '~/services/emailService/index.js'; 
+import tokenService from '~/services/tokenService'; 
 
 // Helper for consistent success response
 const successResponse = (res, message, data = {}) => {
@@ -15,12 +16,17 @@ const errorResponse = (res, statusCode, message) => {
 
 export const sendOtp = async (req, res, next) => {
   try {
-    const { email, type } = req.body;
+    const { email, phone, type } = req.body;
+
+    if (!email && !phone) {
+      return errorResponse(res, 400, 'Email or phone is required');
+    }
+
     const user = await User.findOne({ email });
     if (!user) {
       return errorResponse(res, 404, 'User not found');
-    }
-
+    } 
+    
     await generateAndStoreOtp(user._id, email, type);
     return successResponse(res, 'OTP sent successfully');
   } catch (err) {
@@ -58,8 +64,13 @@ export const verifyOtp = async (req, res, next) => {
       user.isVerified = true; // or user.confirmed = true;
       await user.save();
     }
+    const tokens = await tokenService.generateAuthTokens(user);
 
-    return successResponse(res, 'OTP verified successfully');
+     return res.json({
+      success: true,
+      data: { user, tokens },
+      message: 'OTP verified successfully',
+    });
   } catch (err) {
     next(err);
   }

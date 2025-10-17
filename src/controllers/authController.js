@@ -6,6 +6,8 @@ import config from '~/config/config';
 import httpStatus from 'http-status';
 import Token from '~/models/tokenModel';
 import Role from '~/models/roleModel';
+import googleService from '~/services/googleService'; 
+import appleService from '~/services/appleService';
 
 export const signup = async (req, res) => {
   try {
@@ -342,7 +344,65 @@ export const resetPassword = async (req, res) => {
   } catch (err) {
     return sendAuthError(res, 'Password reset failed', httpStatus.UNAUTHORIZED);
   }
+}; 
+
+export const googleSignIn = async (req, res) => {
+  try {
+    const { idToken } = req.body;
+
+    if (!idToken) {
+      return res.status(400).json({
+        success: false,
+        data: {},
+        message: 'Google ID token is required',
+      });
+    }
+
+    const { user, tokens } = await googleService.googleSignIn(idToken);
+
+    return res.json({
+      success: true,
+      data: { user, tokens },
+      message: 'Google login successful',
+    });
+  } catch (err) {
+    return res.status(400).json({
+      success: false,
+      data: {},
+      message: err.message || 'Google login failed',
+    });
+  }
 };
+
+
+export const appleSignIn = async (req, res) => {
+  try {
+    const { identityToken } = req.body;
+
+    if (!identityToken) {
+      return res.status(400).json({
+        success: false,
+        data: {},
+        message: 'Apple identity token is required',
+      });
+    }
+
+    const { user, tokens } = await appleService.appleSignIn(identityToken);
+
+    return res.json({
+      success: true,
+      data: { user, tokens },
+      message: 'Apple login successful',
+    });
+  } catch (err) {
+    return res.status(400).json({
+      success: false,
+      data: {},
+      message: err.message || 'Apple login failed',
+    });
+  }
+};
+
 
 export default {
 	signup,
@@ -355,5 +415,7 @@ export default {
 	sendVerificationEmail,
 	verifyEmail,
 	forgotPassword,
-	resetPassword
+	resetPassword,
+  googleSignIn, 
+  appleSignIn
 };

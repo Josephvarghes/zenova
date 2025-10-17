@@ -83,6 +83,18 @@ export const updateMe = {
     password: Joi.string().trim().min(6).max(100),
     avatar: Joi.string().max(666)
   })
+}; 
+
+export const googleSignIn = {
+  body: Joi.object().keys({
+    idToken: Joi.string().required(),
+  }),
+}; 
+
+export const appleSignIn = {
+  body: Joi.object().keys({
+    identityToken: Joi.string().required(),
+  }),
 };
 
 export default {
@@ -93,5 +105,7 @@ export default {
   refreshTokens,
   verifyEmail,
   forgotPassword,
-  resetPassword
+  resetPassword, 
+  googleSignIn, 
+  appleSignIn
 };

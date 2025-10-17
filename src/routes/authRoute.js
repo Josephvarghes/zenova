@@ -8,7 +8,10 @@ import authController from '~/controllers/authController';
 const router = Router();
 
 router.post('/signup', catchAsync(authController.signup));
-router.post('/signin', validate(authValidation.signin), catchAsync(authController.signin));
+router.post('/signin', validate(authValidation.signin), catchAsync(authController.signin)); 
+router.post('/google', validate(authValidation.googleSignIn), catchAsync(authController.googleSignIn));
+router.post('/apple', validate(authValidation.appleSignIn), catchAsync(authController.appleSignIn));
+
 router.get('/current', authenticate(), catchAsync(authController.current));
 router.get('/me', authenticate(), catchAsync(authController.getMe));
 router.put('/me', authenticate(), validate(authValidation.updateMe), catchAsync(authController.updateMe));
@@ -17,6 +20,6 @@ router.post('/refresh-tokens', validate(authValidation.refreshTokens), catchAsyn
 router.post('/send-verification-email', authenticate(), catchAsync(authController.sendVerificationEmail));
 router.post('/verify-email', validate(authValidation.verifyEmail), catchAsync(authController.verifyEmail));
 router.post('/forgot-password', validate(authValidation.forgotPassword), catchAsync(authController.forgotPassword));
-router.post('/reset-password', validate(authValidation.resetPassword), catchAsync(authController.resetPassword));
+router.post('/reset-password', validate(authValidation.resetPassword), catchAsync(authController.resetPassword)); 
 
 export default router;

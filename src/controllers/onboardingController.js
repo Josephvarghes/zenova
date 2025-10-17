@@ -16,7 +16,7 @@ export const saveProfile = async (req, res) => {
       medicalCondition, 
       location 
     } = req.body;
-
+ 
     // Get user ID from authenticated request
     const userId = req.user.id;
 
@@ -73,6 +73,17 @@ export const saveProfile = async (req, res) => {
       lifestyle,
       medicalCondition: medicalCondition || undefined,
     };
+
+    // Add NEW fields (only if provided)
+    if (req.body.languages) updateData.languages = req.body.languages;
+    if (req.body.syncAppleHealth !== undefined) updateData.syncAppleHealth = req.body.syncAppleHealth;
+    if (req.body.autoTrackCategories) updateData.autoTrackCategories = req.body.autoTrackCategories;
+    if (req.body.aiTrainer) updateData.aiTrainer = req.body.aiTrainer;
+    if (req.body.aiNutritionist) updateData.aiNutritionist = req.body.aiNutritionist;
+    if (req.body.aiLifestyleCoach) updateData.aiLifestyleCoach = req.body.aiLifestyleCoach;
+    if (req.body.currentMood) updateData.currentMood = req.body.currentMood;
+    if (req.body.lifestyleState) updateData.lifestyleState = req.body.lifestyleState;
+    if (req.body.barriers) updateData.barriers = req.body.barriers;
 
     // Add location if provided
     if (location && Array.isArray(location.coordinates) && location.coordinates.length === 2) {

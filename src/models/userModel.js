@@ -68,7 +68,29 @@ const userSchema = new mongoose.Schema(
     },
     dob: {
       type: Date, // date of birth
+    }, 
+    languages: [String], // e.g., ['Bengali', 'English']
+    syncAppleHealth: {
+      type: Boolean,
+      default: false,
     },
+    autoTrackCategories: [String], // e.g., ['steps', 'nutrition']
+    aiTrainer: {
+      gender: String, // 'male', 'female'
+      tonality: String, // 'energetic', 'calm', 'insightful'
+    },
+    aiNutritionist: {
+      gender: String,
+      tonality: String,
+    },
+    aiLifestyleCoach: {
+      gender: String,
+      tonality: String,
+    },
+    currentMood: String, // 'tired', 'neutral', 'calm', 'energized'
+    lifestyleState: String, // 'chaotic', 'trying_to_get_back', 'on_off', 'balanced'
+    barriers: [String], // e.g., ['too_much_work', 'lack_of_structure']
+
     roles: [
       {
         type: mongoose.Schema.Types.ObjectId,

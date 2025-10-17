@@ -14,7 +14,26 @@ export const saveProfile = {
     location: Joi.object({
       type: Joi.string().valid('Point').default('Point'),
       coordinates: Joi.array().items(Joi.number()).length(2).optional(),
+    }).optional(), 
+
+    languages: Joi.array().items(Joi.string()).optional(),
+    syncAppleHealth: Joi.boolean().optional(),
+    autoTrackCategories: Joi.array().items(Joi.string()).optional(),
+    aiTrainer: Joi.object({
+      gender: Joi.string().valid('male', 'female').optional(),
+      tonality: Joi.string().valid('energetic', 'calm', 'insightful').optional(),
     }).optional(),
+    aiNutritionist: Joi.object({
+      gender: Joi.string().valid('male', 'female').optional(),
+      tonality: Joi.string().valid('energetic', 'calm', 'insightful').optional(),
+    }).optional(),
+    aiLifestyleCoach: Joi.object({
+      gender: Joi.string().valid('male', 'female').optional(),
+      tonality: Joi.string().valid('energetic', 'calm', 'insightful').optional(),
+    }).optional(),
+    currentMood: Joi.string().valid('tired', 'neutral', 'calm', 'energized').optional(),
+    lifestyleState: Joi.string().valid('chaotic', 'trying_to_get_back', 'on_off', 'balanced').optional(),
+    barriers: Joi.array().items(Joi.string()).optional(),
   }),
 };
 
