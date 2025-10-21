@@ -46,4 +46,24 @@ export const handler = (err, req, res, next) => {
 	});
 };
 
-export default { converter, notFound, handler };
+const errorHandler = (err, req, res, next) => {
+  // If it's an operational APIError → use its format
+  if (err.isOperational) {
+    return res.status(err.status).json({
+      success: err.success,
+      data: err.data,
+      message: err.message,
+    });
+  }
+
+  // For unexpected errors
+  console.error('Unexpected error:', err);
+  return res.status(500).json({
+    success: false,
+    data:{},
+    message: 'Internal server error',
+  });
+};
+
+
+export default { converter, notFound, handler, errorHandler };
