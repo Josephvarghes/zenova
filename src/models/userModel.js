@@ -4,6 +4,7 @@ import config from '~/config/config';
 import Role from './roleModel.js';
 import APIError from '~/utils/apiError.js';
 import httpStatus from 'http-status';
+import { number } from 'joi';
 
 const userSchema = new mongoose.Schema(
   {
@@ -90,6 +91,10 @@ const userSchema = new mongoose.Schema(
     currentMood: String, // 'tired', 'neutral', 'calm', 'energized'
     lifestyleState: String, // 'chaotic', 'trying_to_get_back', 'on_off', 'balanced'
     barriers: [String], // e.g., ['too_much_work', 'lack_of_structure']
+
+    stepGoal:{
+      type:Number,
+    },
 
     roles: [
       {
@@ -188,6 +193,45 @@ userSchema.statics.updateUserById = async function (userId, body) {
   Object.assign(user, body);
   return user.save();
 };
+
+
+userSchema.post('save', async function (doc) {
+  // Only run if this is an update (not new user)
+  if (this.isNew) return;
+
+  // Check if weight or height changed
+  if (this.isModified('weight') || this.isModified('height')) {
+    try {
+      // Skip if essential fields are missing
+      if (!this.weight || !this.height || !this.gender || !this.dob) return;
+
+      const age = new Date().getFullYear() - new Date(this.dob).getFullYear();
+      let bmr;
+      if (this.gender === 'male') {
+        bmr = 10 * this.weight + 6.25 * this.height - 5 * age + 5;
+      } else {
+        bmr = 10 * this.weight + 6.25 * this.height - 5 * age - 161;
+      }
+      bmr = Math.round(bmr);
+
+      // Save BMR log
+      await BmrLog.create({
+        userId: this._id,
+        bmr,
+        weight: this.weight,
+        height: this.height,
+        age,
+        gender: this.gender,
+      });
+
+      // Optional: Award NovaCoins (you can add this later)
+      // await awardNovaCoins(this._id, 'bmr_update', 5);
+    } catch (err) {
+      // Log error but don't crash user save
+      console.error('Auto-BMR calculation failed:', err);
+    }
+  }
+});
 
 const User = mongoose.model('users', userSchema);
 export default User;
