@@ -1,7 +1,7 @@
 version: "3.9"
 services:
   mongodb:
-    container_name: mongodb
+    container_name: DB_Container
     image: mongo:latest
     ports:
       - "27017:27017"
@@ -9,7 +9,8 @@ services:
       - mongodb_data:/data/db
     networks:
       - back_tier
-  dserver:
+  api_server:
+    container_name: API_Server_Container
     build: .
 
     networks:
