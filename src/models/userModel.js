@@ -94,7 +94,65 @@ const userSchema = new mongoose.Schema(
 
     stepGoal:{
       type:Number,
+    }, 
+    level: {
+  type: Number,
+  default: 1,
     },
+    badges: [{
+      name: String,        // "Streak Master"
+      icon: String,        // "streak_1"
+      unlockedAt: Date,
+    }],
+    questsCompleted: [{
+      questId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'quests',
+      },
+      completedAt: Date,
+    }], 
+    lastStreakDate: {
+      type: Date,
+      default: null,
+    },
+
+    chats: [{
+  role: {
+    type: String,
+    enum: ['user', 'assistant'],
+    required: true,
+  },
+  content: {
+    type: String,
+    required: true,
+  },
+  bot: {
+    type: String, // 'calia', 'noura'
+    default: 'calia',
+  },
+  timestamp: {
+    type: Date,
+    default: Date.now,
+    },
+  }],
+  lastActiveAt: {
+  type: Date,
+  default: Date.now,
+  },
+  aiPreferences: {
+  calia: {
+    gender: { type: String, enum: ['Male', 'Female'], default: 'Female' },
+    tonality: { type: String, enum: ['Energetic', 'Insightful', 'Calm'], default: 'Calm' },
+  },
+  noura: {
+    gender: { type: String, enum: ['Male', 'Female'], default: 'Female' },
+    tonality: { type: String, enum: ['Energetic', 'Insightful', 'Calm'], default: 'Insightful' },
+  },
+  aeron: {
+    gender: { type: String, enum: ['Male', 'Female'], default: 'Male' },
+    tonality: { type: String, enum: ['Energetic', 'Insightful', 'Calm'], default: 'Energetic' },
+    },
+  },
 
     roles: [
       {
