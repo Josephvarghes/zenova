@@ -14,39 +14,6 @@ const errorResponse = (res, statusCode, message) => {
   return res.status(statusCode).json({ success: false, data: {}, message });
 };
 
-
-
-// export const sendOtp = async (req, res, next) => {
-//   try {
-//     const { email, phone, type } = req.body;
-
-//     console.log('🔍 sendOtp called with:', { email, phone, type });
-
-//     if (!email && !phone) {
-//       return errorResponse(res, 400, 'Email or phone is required');
-//     }
-
-//     let user = null;
-//     if (email) {
-//       user = await User.findOne({ email });
-//       console.log('📧 User lookup by email:', email, '→', user ? 'FOUND' : 'NOT FOUND');
-//     } else if (phone) {
-//       user = await User.findOne({ phone });
-//       console.log('📱 User lookup by phone:', phone, '→', user ? 'FOUND' : 'NOT FOUND');
-//     }
-
-//     const userId = user ? user._id : null;
-//     console.log('🆔 Using userId:', userId);
-
-//     await generateAndStoreOtp(userId, email || phone, type);
-//     return successResponse(res, 'OTP sent successfully');
-//   } catch (err) {
-//     console.error('❌ sendOtp error:', err);
-//     next(err);
-//   }
-// };
-
-// src/controllers/otpController.js
 // src/controllers/otpController.js
 export const sendOtp = async (req, res, next) => {
   try {
@@ -56,26 +23,38 @@ export const sendOtp = async (req, res, next) => {
       return errorResponse(res, 400, 'Email or phone is required');
     }
 
-    // Delete old OTPs
-    await Otp.deleteMany({ $or: [{ email }, { phone }] });
+    // Normalize email
+    const normalizedEmail = email ? email.toLowerCase().trim() : null;
 
-    // Generate new OTP
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
-
-    // Save OTP with email/phone (no user)
-    await Otp.create({
-      email,
-      phone,
-      otp,
-      type,
-      expiresAt,
-    });
-
-    // Send email
-    if (email) {
-      await sendOtpEmail(email, otp, type);
+    // Check if user exists
+    let user = null;
+    if (normalizedEmail) {
+      user = await User.findOne({ email: normalizedEmail });
+    } else if (phone) {
+      user = await User.findOne({ phone });
     }
+
+    // If user doesn't exist, create temp user for onboarding
+    if (!user) {
+      const userName = normalizedEmail 
+        ? normalizedEmail.split('@')[0] 
+        : `user_${Date.now()}`;
+      
+      user = new User({
+        fullName: userName,
+        userName,
+        email: normalizedEmail,
+        phone: phone || undefined,
+        password: 'TEMP_USER_OTP', // Will be updated in onboarding
+        confirmed: false,
+        isVerified: false,
+      });
+      await user.save();
+    }
+
+    // Generate and store OTP
+    const identifier = normalizedEmail || phone;
+    await generateAndStoreOtp(user._id, identifier, type);
 
     return successResponse(res, 'OTP sent successfully');
   } catch (err) {
