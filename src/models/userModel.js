@@ -234,23 +234,23 @@ userSchema.statics.createUser = async function (body) {
 };
 
 // Update user
-userSchema.statics.updateUserById = async function (userId, body) {
-  const user = await this.findById(userId);
-  if (!user) throw new APIError('User not found', httpStatus.NOT_FOUND);
+// userSchema.statics.updateUserById = async function (userId, body) {
+//   const user = await this.findById(userId);
+//   if (!user) throw new APIError('User not found', httpStatus.NOT_FOUND);
 
-  if (body.userName && (await this.findOne({ userName: body.userName, _id: { $ne: userId } }))) {
-    throw new APIError('User name already exists', httpStatus.BAD_REQUEST);
-  }
-  if (body.email && (await this.findOne({ email: body.email, _id: { $ne: userId } }))) {
-    throw new APIError('Email already exists', httpStatus.BAD_REQUEST);
-  }
-  if (body.phone && (await this.findOne({ phone: body.phone, _id: { $ne: userId } }))) {
-    throw new APIError('Phone already exists', httpStatus.BAD_REQUEST);
-  }
+//   if (body.userName && (await this.findOne({ userName: body.userName, _id: { $ne: userId } }))) {
+//     throw new APIError('User name already exists', httpStatus.BAD_REQUEST);
+//   }
+//   if (body.email && (await this.findOne({ email: body.email, _id: { $ne: userId } }))) {
+//     throw new APIError('Email already exists', httpStatus.BAD_REQUEST);
+//   }
+//   if (body.phone && (await this.findOne({ phone: body.phone, _id: { $ne: userId } }))) {
+//     throw new APIError('Phone already exists', httpStatus.BAD_REQUEST);
+//   }
 
-  Object.assign(user, body);
-  return user.save();
-};
+//   Object.assign(user, body);
+//   return user.save();
+// };
 
 
 userSchema.post('save', async function (doc) {
@@ -263,24 +263,24 @@ userSchema.post('save', async function (doc) {
       // Skip if essential fields are missing
       if (!this.weight || !this.height || !this.gender || !this.dob) return;
 
-      const age = new Date().getFullYear() - new Date(this.dob).getFullYear();
-      let bmr;
-      if (this.gender === 'male') {
-        bmr = 10 * this.weight + 6.25 * this.height - 5 * age + 5;
-      } else {
-        bmr = 10 * this.weight + 6.25 * this.height - 5 * age - 161;
-      }
-      bmr = Math.round(bmr);
+      // const age = new Date().getFullYear() - new Date(this.dob).getFullYear();
+      // let bmr;
+      // if (this.gender === 'male') {
+      //   bmr = 10 * this.weight + 6.25 * this.height - 5 * age + 5;
+      // } else {
+      //   bmr = 10 * this.weight + 6.25 * this.height - 5 * age - 161;
+      // }
+      // bmr = Math.round(bmr);
 
-      // Save BMR log
-      await BmrLog.create({
-        userId: this._id,
-        bmr,
-        weight: this.weight,
-        height: this.height,
-        age,
-        gender: this.gender,
-      });
+      // // Save BMR log
+      // await BmrLog.create({
+      //   userId: this._id,
+      //   bmr,
+      //   weight: this.weight,
+      //   height: this.height,
+      //   age,
+      //   gender: this.gender,
+      // });
 
       // Optional: Award NovaCoins (you can add this later)
       // await awardNovaCoins(this._id, 'bmr_update', 5);
