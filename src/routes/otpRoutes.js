@@ -8,7 +8,7 @@ import catchAsync from '~/utils/catchAsync';
 const router = Router();
 
 // Public routes — NO AUTH
-router.post('/send-otp',validate(otpValidation.sendOtp), sendOtp); 
+router.post('/send-otp',validate(otpValidation.sendOtp), catchAsync(sendOtp)); 
 router.post('/verify-otp', validate(otpValidation.verifyOtp), catchAsync(verifyOtp));
 router.post('/signup', validate(otpValidation.signupWithOtp), catchAsync(signupWithOtp)); 
 router.post('/forgot-password', forgotPassword);
