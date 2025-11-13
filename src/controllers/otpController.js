@@ -14,52 +14,6 @@ const errorResponse = (res, statusCode, message) => {
   return res.status(statusCode).json({ success: false, data: {}, message });
 };
 
-// export const sendOtp = async (req, res, next) => {
-//   try {
-//     const { email, phone, type } = req.body;
-
-//     if (!email && !phone) {
-//       return errorResponse(res, 400, 'Email or phone is required');
-//     }
-
-//     const user = await User.findOne({ email });
-//     if (!user) {
-//       return errorResponse(res, 404, 'User not found');
-//     } 
-    
-//     await generateAndStoreOtp(user._id, email, type);
-//     return successResponse(res, 'OTP sent successfully');
-//   } catch (err) {
-//     next(err);
-//   }
-// }; 
-
-// export const sendOtp = async (req, res, next) => {
-//   try {
-//     const { email, phone, type } = req.body;
-
-//     if (!email && !phone) {
-//       return errorResponse(res, 400, 'Email or phone is required');
-//     }
-
-//     // ✅ Try to find user — but don't fail if not found
-//     let user = null;
-//     if (email) {
-//       user = await User.findOne({ email });
-//     } else if (phone) {
-//       user = await User.findOne({ phone });
-//     }
-
-//     // ✅ If user exists, use user._id
-//     // ✅ If user doesn't exist, pass null (for signup flow)
-//     const userId = user ? user._id : null;
-
-//     await generateAndStoreOtp(userId, email || phone, type);
-//     return successResponse(res, 'OTP sent successfully');
-//   } catch (err) {
-//     next(err);
-//   }
-// };
 
 
 export const sendOtp = async (req, res, next) => {
@@ -93,48 +47,6 @@ export const sendOtp = async (req, res, next) => {
 };
 
 
-// export const verifyOtp = async (req, res, next) => {
-//   try {
-//     const { email, otp, type } = req.body;
-
-//     const user = await User.findOne({ email });
-//     if (!user) {
-//       return errorResponse(res, 404, 'User not found');
-//     }
-
-//     const otpDoc = await Otp.findOne({ user: user._id, type }).sort({ createdAt: -1 });
-
-//     if (!otpDoc) {
-//       return errorResponse(res, 400, 'OTP not found');
-//     }
-
-//     if (otpDoc.expiresAt < new Date()) {
-//       return errorResponse(res, 400, 'OTP expired');
-//     }
-
-//     if (otpDoc.otp !== String(otp)) {
-//       return errorResponse(res, 400, 'Invalid OTP');
-//     }
-
-//     await Otp.deleteMany({ user: user._id, type });
-
-//     if (type === 'EMAIL_VERIFICATION') {
-//       // ✅ FIX: Use existing field (your User model has `isVerified` or `confirmed`, NOT `emailVerified`)
-//       user.isVerified = true; // or user.confirmed = true;
-//       await user.save();
-//     }
-//     const tokens = await tokenService.generateAuthTokens(user); 
-    
-
-//      return res.json({
-//       success: true,
-//       data: { user, tokens },
-//       message: 'OTP verified successfully',
-//     });
-//   } catch (err) {
-//     next(err);
-//   }
-// };
 
 // src/controllers/otpController.js
 export const verifyOtp = async (req, res, next) => {
