@@ -47,17 +47,35 @@ const errorResponse = (res, statusCode, message) => {
 // };
 
 // src/controllers/otpController.js
+// src/controllers/otpController.js
 export const sendOtp = async (req, res, next) => {
   try {
-    const { email, phone, type } = req.body;
+    const { email, phone, type = 'LOGIN' } = req.body;
 
     if (!email && !phone) {
       return errorResponse(res, 400, 'Email or phone is required');
     }
 
-    // ✅ DO NOT look for user — new users don't exist yet
-    const identifier = email || phone;
-    await generateAndStoreOtp(null, identifier, type); // user = null
+    // Delete old OTPs
+    await Otp.deleteMany({ $or: [{ email }, { phone }] });
+
+    // Generate new OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
+
+    // Save OTP with email/phone (no user)
+    await Otp.create({
+      email,
+      phone,
+      otp,
+      type,
+      expiresAt,
+    });
+
+    // Send email
+    if (email) {
+      await sendOtpEmail(email, otp, type);
+    }
 
     return successResponse(res, 'OTP sent successfully');
   } catch (err) {
@@ -65,37 +83,35 @@ export const sendOtp = async (req, res, next) => {
   }
 };
 
-// src/controllers/otpController.js
 export const verifyOtp = async (req, res, next) => {
   try {
-    const { email, phone, otp, type } = req.body;
+    const { email, phone, otp } = req.body;
 
-    if ((!email && !phone) || !otp || !type) {
-      return errorResponse(res, 400, 'Email/phone, OTP, and type are required');
-    }
-
-    // Find OTP by email/phone (not user ID)
+    // Find OTP by email/phone
     const otpDoc = await Otp.findOne({
       $or: [{ email }, { phone }],
-      type,
       otp,
-      expiresAt: { $gte: new Date() }
+      expiresAt: { $gte: new Date() },
+      verified: false,
     });
 
     if (!otpDoc) {
       return errorResponse(res, 400, 'Invalid or expired OTP');
     }
 
+    // Mark as verified
+    otpDoc.verified = true;
+    await otpDoc.save();
+
     // Find or create user
     let user = null;
-    let isNewUser = false;
-
     if (email) {
       user = await User.findOne({ email });
     } else if (phone) {
       user = await User.findOne({ phone });
     }
 
+    let isNewUser = false;
     if (!user) {
       user = new User({
         fullName: 'New User',
@@ -108,23 +124,14 @@ export const verifyOtp = async (req, res, next) => {
       });
       await user.save();
       isNewUser = true;
-
-      // Link OTP to user
-      otpDoc.user = user._id;
-      await otpDoc.save();
     }
 
-    if (type === 'EMAIL_VERIFICATION' && !user.isVerified) {
-      user.isVerified = true;
-      await user.save();
-    }
-
+    // Generate tokens
     const tokens = await tokenService.generateAuthTokens(user);
-    await Otp.deleteMany({ $or: [{ email }, { phone }], type });
 
     return res.json({
       success: true,
-      data: {
+       data:{
         userId: user._id,
         isNewUser,
         user: {
