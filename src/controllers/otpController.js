@@ -16,37 +16,54 @@ const errorResponse = (res, statusCode, message) => {
 
 
 
+// export const sendOtp = async (req, res, next) => {
+//   try {
+//     const { email, phone, type } = req.body;
+
+//     console.log('🔍 sendOtp called with:', { email, phone, type });
+
+//     if (!email && !phone) {
+//       return errorResponse(res, 400, 'Email or phone is required');
+//     }
+
+//     let user = null;
+//     if (email) {
+//       user = await User.findOne({ email });
+//       console.log('📧 User lookup by email:', email, '→', user ? 'FOUND' : 'NOT FOUND');
+//     } else if (phone) {
+//       user = await User.findOne({ phone });
+//       console.log('📱 User lookup by phone:', phone, '→', user ? 'FOUND' : 'NOT FOUND');
+//     }
+
+//     const userId = user ? user._id : null;
+//     console.log('🆔 Using userId:', userId);
+
+//     await generateAndStoreOtp(userId, email || phone, type);
+//     return successResponse(res, 'OTP sent successfully');
+//   } catch (err) {
+//     console.error('❌ sendOtp error:', err);
+//     next(err);
+//   }
+// };
+
+// src/controllers/otpController.js
 export const sendOtp = async (req, res, next) => {
   try {
     const { email, phone, type } = req.body;
-
-    console.log('🔍 sendOtp called with:', { email, phone, type });
 
     if (!email && !phone) {
       return errorResponse(res, 400, 'Email or phone is required');
     }
 
-    let user = null;
-    if (email) {
-      user = await User.findOne({ email });
-      console.log('📧 User lookup by email:', email, '→', user ? 'FOUND' : 'NOT FOUND');
-    } else if (phone) {
-      user = await User.findOne({ phone });
-      console.log('📱 User lookup by phone:', phone, '→', user ? 'FOUND' : 'NOT FOUND');
-    }
+    // ✅ DO NOT look for user — new users don't exist yet
+    const identifier = email || phone;
+    await generateAndStoreOtp(null, identifier, type); // user = null
 
-    const userId = user ? user._id : null;
-    console.log('🆔 Using userId:', userId);
-
-    await generateAndStoreOtp(userId, email || phone, type);
     return successResponse(res, 'OTP sent successfully');
   } catch (err) {
-    console.error('❌ sendOtp error:', err);
     next(err);
   }
 };
-
-
 
 // src/controllers/otpController.js
 export const verifyOtp = async (req, res, next) => {
