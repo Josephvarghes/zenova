@@ -34,29 +34,60 @@ const errorResponse = (res, statusCode, message) => {
 //   }
 // }; 
 
+// export const sendOtp = async (req, res, next) => {
+//   try {
+//     const { email, phone, type } = req.body;
+
+//     if (!email && !phone) {
+//       return errorResponse(res, 400, 'Email or phone is required');
+//     }
+
+//     // ✅ Try to find user — but don't fail if not found
+//     let user = null;
+//     if (email) {
+//       user = await User.findOne({ email });
+//     } else if (phone) {
+//       user = await User.findOne({ phone });
+//     }
+
+//     // ✅ If user exists, use user._id
+//     // ✅ If user doesn't exist, pass null (for signup flow)
+//     const userId = user ? user._id : null;
+
+//     await generateAndStoreOtp(userId, email || phone, type);
+//     return successResponse(res, 'OTP sent successfully');
+//   } catch (err) {
+//     next(err);
+//   }
+// };
+
+
 export const sendOtp = async (req, res, next) => {
   try {
     const { email, phone, type } = req.body;
+
+    console.log('🔍 sendOtp called with:', { email, phone, type });
 
     if (!email && !phone) {
       return errorResponse(res, 400, 'Email or phone is required');
     }
 
-    // ✅ Try to find user — but don't fail if not found
     let user = null;
     if (email) {
       user = await User.findOne({ email });
+      console.log('📧 User lookup by email:', email, '→', user ? 'FOUND' : 'NOT FOUND');
     } else if (phone) {
       user = await User.findOne({ phone });
+      console.log('📱 User lookup by phone:', phone, '→', user ? 'FOUND' : 'NOT FOUND');
     }
 
-    // ✅ If user exists, use user._id
-    // ✅ If user doesn't exist, pass null (for signup flow)
     const userId = user ? user._id : null;
+    console.log('🆔 Using userId:', userId);
 
     await generateAndStoreOtp(userId, email || phone, type);
     return successResponse(res, 'OTP sent successfully');
   } catch (err) {
+    console.error('❌ sendOtp error:', err);
     next(err);
   }
 };
