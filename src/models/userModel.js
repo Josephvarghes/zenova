@@ -176,120 +176,120 @@ const userSchema = new mongoose.Schema(
   }
 );
 
-// // Virtual field for avatar URL
-// userSchema.virtual('avatarUrl').get(function () {
-//   return config.IMAGE_URL + '/' + this.avatar;
-// });
+// Virtual field for avatar URL
+userSchema.virtual('avatarUrl').get(function () {
+  return config.IMAGE_URL + '/' + this.avatar;
+});
 
-// // Password hash middleware
-// userSchema.pre('save', async function (next) {
-//   if (this.isModified('password')) {
-//     const salt = bcrypt.genSaltSync(10);
-//     this.password = bcrypt.hashSync(this.password, salt);
-//   }
-//   next();
-// });
+// Password hash middleware
+userSchema.pre('save', async function (next) {
+  if (this.isModified('password')) {
+    const salt = bcrypt.genSaltSync(10);
+    this.password = bcrypt.hashSync(this.password, salt);
+  }
+  next();
+});
 
-// // Instance method for password check
-// userSchema.methods.isPasswordMatch = function (password) {
-//   return bcrypt.compareSync(password, this.password);
-// };
+// Instance method for password check
+userSchema.methods.isPasswordMatch = function (password) {
+  return bcrypt.compareSync(password, this.password);
+};
 
-// /** Static helpers */
-// userSchema.statics.getUserById = function (id) {
-//   return this.findById(id);
-// };
+/** Static helpers */
+userSchema.statics.getUserById = function (id) {
+  return this.findById(id);
+};
 
-// userSchema.statics.getUserByIdWithRoles = function (id) {
-//   return this.findById(id).populate('roles', 'name description');
-// };
+userSchema.statics.getUserByIdWithRoles = function (id) {
+  return this.findById(id).populate('roles', 'name description');
+};
 
-// userSchema.statics.getUserByUserName = function (userName) {
-//   return this.findOne({ userName });
-// };
+userSchema.statics.getUserByUserName = function (userName) {
+  return this.findOne({ userName });
+};
 
-// userSchema.statics.getUserByEmail = function (email) {
-//   return this.findOne({ email });
-// };
+userSchema.statics.getUserByEmail = function (email) {
+  return this.findOne({ email });
+};
 
-// // Create user with basic validation
-// userSchema.statics.createUser = async function (body) {
-//   if (await this.findOne({ userName: body.userName })) {
-//     throw new APIError('User name already exists', httpStatus.BAD_REQUEST);
-//   }
-//   if (body.email && (await this.findOne({ email: body.email }))) {
-//     throw new APIError('Email already exists', httpStatus.BAD_REQUEST);
-//   }
-//   if (body.phone && (await this.findOne({ phone: body.phone }))) {
-//     throw new APIError('Phone already exists', httpStatus.BAD_REQUEST);
-//   }
-//   if (body.roles) {
-//     for (const rid of body.roles) {
-//       if (!(await Role.findById(rid))) {
-//         throw new APIError('Role does not exist', httpStatus.BAD_REQUEST);
-//       }
-//     }
-//   }
-//   return this.create(body);
-// };
+// Create user with basic validation
+userSchema.statics.createUser = async function (body) {
+  if (await this.findOne({ userName: body.userName })) {
+    throw new APIError('User name already exists', httpStatus.BAD_REQUEST);
+  }
+  if (body.email && (await this.findOne({ email: body.email }))) {
+    throw new APIError('Email already exists', httpStatus.BAD_REQUEST);
+  }
+  if (body.phone && (await this.findOne({ phone: body.phone }))) {
+    throw new APIError('Phone already exists', httpStatus.BAD_REQUEST);
+  }
+  if (body.roles) {
+    for (const rid of body.roles) {
+      if (!(await Role.findById(rid))) {
+        throw new APIError('Role does not exist', httpStatus.BAD_REQUEST);
+      }
+    }
+  }
+  return this.create(body);
+};
 
 // Update user
-// userSchema.statics.updateUserById = async function (userId, body) {
-//   const user = await this.findById(userId);
-//   if (!user) throw new APIError('User not found', httpStatus.NOT_FOUND);
+userSchema.statics.updateUserById = async function (userId, body) {
+  const user = await this.findById(userId);
+  if (!user) throw new APIError('User not found', httpStatus.NOT_FOUND);
 
-//   if (body.userName && (await this.findOne({ userName: body.userName, _id: { $ne: userId } }))) {
-//     throw new APIError('User name already exists', httpStatus.BAD_REQUEST);
-//   }
-//   if (body.email && (await this.findOne({ email: body.email, _id: { $ne: userId } }))) {
-//     throw new APIError('Email already exists', httpStatus.BAD_REQUEST);
-//   }
-//   if (body.phone && (await this.findOne({ phone: body.phone, _id: { $ne: userId } }))) {
-//     throw new APIError('Phone already exists', httpStatus.BAD_REQUEST);
-//   }
+  if (body.userName && (await this.findOne({ userName: body.userName, _id: { $ne: userId } }))) {
+    throw new APIError('User name already exists', httpStatus.BAD_REQUEST);
+  }
+  if (body.email && (await this.findOne({ email: body.email, _id: { $ne: userId } }))) {
+    throw new APIError('Email already exists', httpStatus.BAD_REQUEST);
+  }
+  if (body.phone && (await this.findOne({ phone: body.phone, _id: { $ne: userId } }))) {
+    throw new APIError('Phone already exists', httpStatus.BAD_REQUEST);
+  }
 
-//   Object.assign(user, body);
-//   return user.save();
-// };
+  Object.assign(user, body);
+  return user.save();
+};
 
 
-// userSchema.post('save', async function (doc) {
-//   // Only run if this is an update (not new user)
-//   if (this.isNew) return;
+userSchema.post('save', async function (doc) {
+  // Only run if this is an update (not new user)
+  if (this.isNew) return;
 
-//   // Check if weight or height changed
-//   if (this.isModified('weight') || this.isModified('height')) {
-//     try {
-//       // Skip if essential fields are missing
-//       if (!this.weight || !this.height || !this.gender || !this.dob) return;
+  // Check if weight or height changed
+  if (this.isModified('weight') || this.isModified('height')) {
+    try {
+      // Skip if essential fields are missing
+      if (!this.weight || !this.height || !this.gender || !this.dob) return;
 
-      // const age = new Date().getFullYear() - new Date(this.dob).getFullYear();
-      // let bmr;
-      // if (this.gender === 'male') {
-      //   bmr = 10 * this.weight + 6.25 * this.height - 5 * age + 5;
-      // } else {
-      //   bmr = 10 * this.weight + 6.25 * this.height - 5 * age - 161;
-      // }
-      // bmr = Math.round(bmr);
+      const age = new Date().getFullYear() - new Date(this.dob).getFullYear();
+      let bmr;
+      if (this.gender === 'male') {
+        bmr = 10 * this.weight + 6.25 * this.height - 5 * age + 5;
+      } else {
+        bmr = 10 * this.weight + 6.25 * this.height - 5 * age - 161;
+      }
+      bmr = Math.round(bmr);
 
-      // // Save BMR log
-      // await BmrLog.create({
-      //   userId: this._id,
-      //   bmr,
-      //   weight: this.weight,
-      //   height: this.height,
-      //   age,
-      //   gender: this.gender,
-      // });
+      // Save BMR log
+      await BmrLog.create({
+        userId: this._id,
+        bmr,
+        weight: this.weight,
+        height: this.height,
+        age,
+        gender: this.gender,
+      });
 
       // Optional: Award NovaCoins (you can add this later)
-      // await awardNovaCoins(this._id, 'bmr_update', 5);
-//     } catch (err) {
-//       // Log error but don't crash user save
-//       console.error('Auto-BMR calculation failed:', err);
-//     }
-//   }
-// });
+      await awardNovaCoins(this._id, 'bmr_update', 5);
+    } catch (err) {
+      // Log error but don't crash user save
+      console.error('Auto-BMR calculation failed:', err);
+    }
+  }
+});
 
 const User = mongoose.model('users', userSchema);
 export default User;
