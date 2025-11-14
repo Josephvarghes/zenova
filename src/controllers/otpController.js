@@ -114,66 +114,6 @@ export const sendOtp = async (req, res, next) => {
 
 
 
-
-// ✅ Verify OTP (JWT uses user.id → matches your middleware)
-// export const verifyOtp = async (req, res, next) => {
-//   try {
-//     const { email, phone, otp, type } = req.body;
-
-//     // Find user first
-//     let user = null;
-//     if (email) {
-//       user = await User.findOne({ email });
-//     } else if (phone) {
-//       user = await User.findOne({ phone });
-//     }
-
-//     if (!user) {
-//       return errorResponse(res, 400, 'User not found');
-//     }
-//     console.log('🔍 Verifying OTP for:', { email, phone, otp });
-//     // Find OTP linked to THIS user
-//     const otpDoc = await Otp.findOne({
-//       user: user._id, // ← Critical: matches your JWT's payload.sub
-//       otp,
-//       type: 'EMAIL_VERIFICATION',
-//       expiresAt: { $gte: new Date() },
-//     });
-//     console.log('📄 Found OTP:', otpDoc);
-//     if (!otpDoc) {
-//       return errorResponse(res, 400, 'Invalid or expired OTP');
-//     }
-
-//     // Mark as used (optional)
-//     await Otp.deleteOne({ _id: otpDoc._id });
-
-//     const tokens = await tokenService.generateAuthTokens(user);
-//     const isNewUser = !user.confirmed;
-
-//     return res.json({
-//       success: true,
-//       data: {
-//         userId: user._id,
-//         isNewUser,
-//         user: {
-//           id: user._id,
-//           fullName: user.fullName,
-//           userName: user.userName,
-//           email: user.email,
-//           phone: user.phone,
-//           avatarUrl: user.avatarUrl,
-//         },
-//         tokens,
-//       },
-//       message: isNewUser 
-//         ? 'Account created. Complete onboarding.' 
-//         : 'Login successful.',
-//     });
-//   } catch (err) {
-//     next(err);
-//   }
-// };
-
 export const verifyOtp = async (req, res, next) => {
   try {
     let { email, phone, otp, type } = req.body;
@@ -202,7 +142,7 @@ export const verifyOtp = async (req, res, next) => {
     const otpDoc = await Otp.findOne({
       user: user._id,
       otp,
-      type,            // <-- FIXED
+      type,
       expiresAt: { $gte: new Date() },
     });
 
@@ -223,7 +163,9 @@ export const verifyOtp = async (req, res, next) => {
 
     // Generate JWT tokens
     const tokens = await tokenService.generateAuthTokens(user);
-    const isNewUser = !user.confirmed;
+
+    // FIX: Determine onboarding status using new flag
+    const isNewUser = !user.isOnboarded;
 
     return res.json({
       success: true,
@@ -252,27 +194,19 @@ export const verifyOtp = async (req, res, next) => {
 
 
 
+
+
 // export const verifyOtp = async (req, res, next) => {
 //   try {
-//     const { email, phone, otp } = req.body;
+//     let { email, phone, otp, type } = req.body;
 
-//     // Find OTP by email/phone
-//     const otpDoc = await Otp.findOne({
-//       $or: [{ email }, { phone }],
-//       otp,
-//       expiresAt: { $gte: new Date() },
-//       verified: false,
-//     });
+//     // Default OTP type (same as sendOtp)
+//     type = type || 'LOGIN';
 
-//     if (!otpDoc) {
-//       return errorResponse(res, 400, 'Invalid or expired OTP');
-//     }
+//     // Normalize email for consistency
+//     if (email) email = email.toLowerCase().trim();
 
-//     // Mark as verified
-//     otpDoc.verified = true;
-//     await otpDoc.save();
-
-//     // Find or create user
+//     // Find user first
 //     let user = null;
 //     if (email) {
 //       user = await User.findOne({ email });
@@ -280,27 +214,42 @@ export const verifyOtp = async (req, res, next) => {
 //       user = await User.findOne({ phone });
 //     }
 
-//     let isNewUser = false;
 //     if (!user) {
-//       user = new User({
-//         fullName: 'New User',
-//         userName: `user_${Date.now()}`,
-//         email: email || undefined,
-//         phone: phone || undefined,
-//         password: 'temp_password',
-//         confirmed: true,
-//         isVerified: true,
-//       });
-//       await user.save();
-//       isNewUser = true;
+//       return errorResponse(res, 400, 'User not found');
 //     }
 
-//     // Generate tokens
+//     console.log('🔍 Verifying OTP for:', { email, phone, otp, type });
+
+//     // Find OTP linked to THIS user and correct type
+//     const otpDoc = await Otp.findOne({
+//       user: user._id,
+//       otp,
+//       type,            // <-- FIXED
+//       expiresAt: { $gte: new Date() },
+//     });
+
+//     console.log('📄 Found OTP:', otpDoc);
+
+//     if (!otpDoc) {
+//       return errorResponse(res, 400, 'Invalid or expired OTP');
+//     }
+
+//     // Delete OTP after successful use
+//     await Otp.deleteOne({ _id: otpDoc._id });
+
+//     // Mark user verified (optional)
+//     if (!user.isVerified) {
+//       user.isVerified = true;
+//       await user.save();
+//     }
+
+//     // Generate JWT tokens
 //     const tokens = await tokenService.generateAuthTokens(user);
+//     const isNewUser = !user.confirmed;
 
 //     return res.json({
 //       success: true,
-//        data:{
+//       data: {
 //         userId: user._id,
 //         isNewUser,
 //         user: {
@@ -313,14 +262,19 @@ export const verifyOtp = async (req, res, next) => {
 //         },
 //         tokens,
 //       },
-//       message: isNewUser 
-//         ? 'Account created. Complete onboarding.' 
+//       message: isNewUser
+//         ? 'Account created. Complete onboarding.'
 //         : 'Login successful.',
 //     });
+
 //   } catch (err) {
 //     next(err);
 //   }
 // };
+
+
+
+
 
 
 
