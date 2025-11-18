@@ -2,7 +2,8 @@ import Otp from '../models/otpModel';
 import User from '../models/userModel';
 import { generateAndStoreOtp } from '../utils/otp.js';
 import { sendOtpEmail } from '~/services/emailService/index.js'; 
-import tokenService from '~/services/tokenService'; 
+import tokenService from '~/services/tokenService';  
+import { nanoid } from 'nanoid';
 
 // Helper for consistent success response
 const successResponse = (res, message, data = {}) => {
@@ -84,9 +85,7 @@ export const sendOtp = async (req, res, next) => {
 
     if (!user) {
       // Create user ONLY if not found
-      const userName = normalizedEmail 
-        ? normalizedEmail.split('@')[0] 
-        : `user_${Date.now()}`;
+      const userName = `user_${nanoid(6)}`;  
       
       user = new User({
         fullName: userName,
