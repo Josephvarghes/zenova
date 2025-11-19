@@ -35,7 +35,7 @@ app.use(error.converter);
 app.use(error.notFound);
 app.use(error.handler);
 app.get("/testtt",(req,res)=>{
- return res.json({data:"hello"
+ return res.json({"data":"hello"
 })})
 
 export default app;
