@@ -34,8 +34,8 @@ app.use('/api', routes);
 app.use(error.converter);
 app.use(error.notFound);
 app.use(error.handler);
-app.get("/testtt",(req,res)=>{
- return res.json({"data":"hello world"
+app.get("/test-run",(req,res)=>{
+ return res.json({"data":"It's live"
 })})
 
 export default app;
