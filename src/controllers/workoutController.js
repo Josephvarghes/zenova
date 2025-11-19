@@ -5,6 +5,8 @@ import WorkoutLog from '~/models/workoutLogModel';
 import User from '~/models/userModel';
 import httpStatus from 'http-status';
 import APIError from '~/utils/apiError';
+import questService from '~/services/questService';
+import streakService from '~/services/streakService';
 
 // Helper: Calculate calories burned for an exercise
 const calculateExerciseCalories = (durationMin, estimatedBurnPerMin, weightKg = 70) => {
@@ -172,7 +174,17 @@ export const logWorkout = async (req, res) => {
     const savedLog = await workoutLog.save();
 
     // Award NovaCoins (optional)
-    const novaCoinsEarned = Math.floor(totalCaloriesBurned / 100); // 1 coin per 100 kcal
+    const novaCoinsEarned = Math.floor(totalCaloriesBurned / 100); // 1 coin per 100 kcal 
+
+    const user = await User.findById(userId);
+    const streakDays = await streakService.updateStreak(userId);
+    await User.findByIdAndUpdate(userId, { streakDays });
+
+    await questService.checkQuestCompletion(userId, {
+      streakDays,
+      workoutLogs: 1,
+      totalNovaCoins: user.novaCoins + novaCoinsEarned, // from your logic
+    });
 
     return res.json({
       success: true,

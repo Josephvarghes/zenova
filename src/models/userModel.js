@@ -59,6 +59,7 @@ const userSchema = new mongoose.Schema(
     medicalCondition: {
       type: String, // 'stress', 'none', 'diabetes', etc.
     },
+    isOnboarded: { type: Boolean, default: false },
     location: {
       type: {
         type: String,

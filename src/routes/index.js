@@ -9,6 +9,16 @@ import workoutRoutes from './workoutRoutes';
 import uploadRoutes from './uploadRoutes';
 import meditationRoutes from './meditationRoutes';
 import yogaRoutes from './yogaRoutes';
+import sleepRoutes from './sleepRoutes';
+import moodRoutes from './moodRoutes';
+import menstrualRoutes from './menstrualRoutes'; 
+import screenTimeRoutes from './screenTimeRoutes';
+import aiRoutes from './aiRoutes';
+import chatRoutes from './chatRoutes';  
+import notificationRoutes from './notificationRoutes';
+import medicineRoutes from './medicineRoutes'; 
+import habitRoutes from './habitRoutes'
+import readingRoutes from './readingRoutes';
 
 const router = Router();
 
@@ -21,6 +31,16 @@ router.use('/steps', stepRoutes);
 router.use('/workouts', workoutRoutes);
 router.use('/upload', uploadRoutes); 
 router.use('/meditation', meditationRoutes);
-router.use('/yoga', yogaRoutes); 
+router.use('/yoga', yogaRoutes);  
+router.use('/sleep', sleepRoutes); 
+router.use('/mood', moodRoutes);
+router.use('/menstrual', menstrualRoutes);
+router.use('/screen-time', screenTimeRoutes);
+router.use('/ai', aiRoutes); 
+router.use('/chat', chatRoutes); 
+router.use('/notification', notificationRoutes);
+router.use('/medicine', medicineRoutes);
+router.use('/habit', habitRoutes); 
+router.use('/reading', readingRoutes); 
 
 export default router;

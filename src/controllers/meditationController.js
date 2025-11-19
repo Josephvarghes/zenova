@@ -4,7 +4,8 @@ import MeditationPlan from '~/models/meditationPlanModel';
 import User from '~/models/userModel';
 import httpStatus from 'http-status';
 import APIError from '~/utils/apiError'; 
-
+import questService from '~/services/questService';
+import streakService from '~/services/streakService';
 
 export const logMeditation = async (req, res) => {
   try {
@@ -26,14 +27,50 @@ export const logMeditation = async (req, res) => {
       mood: mood || 'Neutral',
     });
 
-    const savedLog = await meditationLog.save();
+   const savedLog = await meditationLog.save();
 
-    // Award NovaCoins (1 coin per 5 minutes)
-    const novaCoinsEarned = Math.floor(durationMin / 5);
+
+    // ✅ Check for pending mood suggestion
+    const today = new Date();
+    const start = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const end = new Date(start.getTime() + 24 * 60 * 60 * 1000);
+
+    const pendingMoodLog = await MoodLog.findOne({
+      userId,
+      loggedAt: { $gte: start, $lte: end },
+      isSuggestionCompleted: false,
+      'suggestedActivity.type': 'meditation'
+    });
+
+    let extraCoins = 0;
+    if (pendingMoodLog) {
+      // Award extra coins
+      extraCoins = pendingMoodLog.suggestedActivity.reward;
+
+      // Mark as completed
+      pendingMoodLog.isSuggestionCompleted = true;
+      pendingMoodLog.completedAt = new Date();
+      await pendingMoodLog.save();
+    }
+
+    const novaCoinsEarned = Math.floor(durationMin / 5) + extraCoins; 
+
+       // Update streak (if needed — based on your streak logic)
+    const user = await User.findById(userId);
+    // const streakDays = user.streakDays + 1;  // Your streak logic
+    const streakDays = await streakService.updateStreak(userId);
+    await User.findByIdAndUpdate(userId, { streakDays });
+
+    // ✅ ADD QUEST CHECK
+    await questService.checkQuestCompletion(userId, {
+      streakDays,
+      meditationLogs: 1,
+      totalNovaCoins: user.novaCoins + novaCoinsEarned, // e.g., Math.floor(durationMin / 5)
+    });
 
     return res.json({
       success: true,
-       data:{ savedLog, novaCoinsEarned },
+       data:{ savedLog, novaCoinsEarned, extraCoins },
       message: 'Meditation session logged successfully',
     });
   } catch (err) {

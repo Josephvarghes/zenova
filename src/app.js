@@ -8,12 +8,16 @@ import error from '~/middlewares/error';
 import rateLimiter from '~/middlewares/rateLimiter';
 import config from '~/config/config';
 import morgan from '~/config/morgan';
+import startNotificationScheduler from './services/notificationScheduler';
 
 const app = express();
 
 if (config.NODE_ENV !== 'test') {
 	app.use(morgan);
 }
+
+// Start scheduler
+startNotificationScheduler();
 
 app.use(helmet());
 app.use(express.json());

@@ -4,7 +4,9 @@ import MealLog from '~/models/mealLogModel';
 import GroceryList from '~/models/groceryListModel';
 import User from '~/models/userModel';
 import httpStatus from 'http-status';
-import APIError from '~/utils/apiError';
+import APIError from '~/utils/apiError'; 
+import questService from '~/services/questService'; 
+import streakService from '~/services/streakService';
 
 // Helper: Calculate target calories based on user profile
 const calculateTargetCalories = (user) => {
@@ -97,6 +99,19 @@ export const logMeal = async (req, res) => {
     });
 
     const savedLog = await mealLog.save();
+
+    // Update streak (if needed)
+    const user = await User.findById(userId);
+    const streakDays = await streakService.updateStreak(userId);
+
+    await User.findByIdAndUpdate(userId, { streakDays });
+
+    // ✅ Check quests
+    await questService.checkQuestCompletion(userId, {
+      streakDays,
+      mealLogs: 1,
+      totalNovaCoins: user.novaCoins + 5,
+    });
 
     return res.json({
       success: true,
@@ -290,6 +305,7 @@ export const getNutritionSummary = async (req, res) => {
 };
 
 
+
 export default {
   generateMealPlan,
   logMeal,
@@ -297,4 +313,93 @@ export default {
   getMealLogs,
   getNutritionSummary
 
-};
+}; 
+
+// src/controllers/mealController.js
+// import httpStatus from 'http-status';
+// import * as mealService from '~/services/mealService';
+
+
+// export const generateMealPlan = async (req, res, next) => {
+//     try {
+//       const userId = req.user.id;
+//       const { date, useAI } = req.body; // useAI: boolean -> whether to call AI generator
+//       const plan = await mealService.generateMealPlan({ userId, date, useAI });
+//       return res.json({
+//         success: true,
+//         data: plan,
+//         message: 'Meal plan generated successfully',
+//       });
+//     } catch (err) {
+//       next(err);
+//     }
+//   };
+
+
+// export const logMeal = async(req, res, next) => {
+//     try {
+//       const userId = req.user.id;
+//       const payload = req.body;
+//       const savedLog = await mealService.logMeal({ userId, payload });
+//       return res.json({
+//         success: true,
+//         data: savedLog,
+//         message: 'Meal logged successfully',
+//       });
+//     } catch (err) {
+//       next(err);
+//     }
+//   };
+
+// export const generateGroceryList = async (req, res, next) => {
+//     try {
+//       const userId = req.user.id;
+//       const { planId } = req.body;
+//       const list = await mealService.generateGroceryList({ userId, planId });
+//       return res.json({
+//         success: true,
+//         data: list,
+//         message: 'Grocery list generated successfully',
+//       });
+//     } catch (err) {
+//       next(err);
+//     }
+//   };
+
+// export const getMealLogs = async(req, res, next) => {
+//     try {
+//       const userId = req.user.id;
+//       const { startDate, endDate, page, limit } = req.query;
+//       const logs = await mealService.getMealLogs({ userId, startDate, endDate, page, limit });
+//       return res.json({
+//         success: true,
+//         data: logs,
+//         message: 'Meal logs fetched successfully',
+//       });
+//     } catch (err) {
+//       next(err);
+//     }
+//   };
+
+// export const getNutritionSummary = async (req, res, next) => {
+//     try {
+//       const userId = req.user.id;
+//       const { startDate, endDate } = req.query;
+//       const summary = await mealService.getNutritionSummary({ userId, startDate, endDate });
+//       return res.json({
+//         success: true,
+//         data: summary,
+//         message: 'Nutrition summary fetched successfully',
+//       });
+//     } catch (err) {
+//       next(err);
+//     }
+//   };
+
+// export default {
+//   generateMealPlan,
+//   logMeal,
+//   generateGroceryList,
+//   getMealLogs,
+//   getNutritionSummary,
+// };

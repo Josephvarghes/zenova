@@ -2,7 +2,9 @@
 import SleepLog from '~/models/sleepLogModel';
 import User from '~/models/userModel';
 import httpStatus from 'http-status';
-import APIError from '~/utils/apiError';
+import APIError from '~/utils/apiError'; 
+import questService from '~/services/questService';
+import streakService from '~/services/streakService';
 
 export const setSleepGoal = async (req, res) => {
   try {
@@ -77,7 +79,18 @@ export const logSleep = async (req, res) => {
     const savedLog = await sleepLog.save();
 
     // Award NovaCoins (1 coin per 30 minutes)
-    const novaCoinsEarned = Math.floor(durationMin / 30);
+    const novaCoinsEarned = Math.floor(durationMin / 30); 
+
+    const user = await User.findById(userId);
+    const streakDays = await streakService.updateStreak(userId);
+    await User.findByIdAndUpdate(userId, { streakDays });
+
+    // ✅ ADD QUEST CHECK
+    await questService.checkQuestCompletion(userId, {
+      streakDays,
+      sleepLogs: 1,
+      totalNovaCoins: user.novaCoins + novaCoinsEarned, // e.g., Math.floor(durationMin / 30)
+    });
 
     return res.json({
       success: true,

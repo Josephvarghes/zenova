@@ -3,6 +3,8 @@ import YogaLog from '~/models/yogaLogModel';
 import User from '~/models/userModel';
 import httpStatus from 'http-status';
 import APIError from '~/utils/apiError';
+import questService from '~/services/questService';
+import streakService from '~/services/streakService';
 
 export const logYoga = async (req, res) => {
   try {
@@ -27,7 +29,18 @@ export const logYoga = async (req, res) => {
     const savedLog = await yogaLog.save();
 
     // Award NovaCoins (1 coin per 5 minutes)
-    const novaCoinsEarned = Math.floor(durationMin / 5);
+    const novaCoinsEarned = Math.floor(durationMin / 5); 
+
+    const user = await User.findById(userId);
+    const streakDays = await streakService.updateStreak(userId);
+    await User.findByIdAndUpdate(userId, { streakDays });
+
+    // ✅ ADD QUEST CHECK
+    await questService.checkQuestCompletion(userId, {
+      streakDays,
+      yogaLogs: 1,
+      totalNovaCoins: user.novaCoins + novaCoinsEarned, 
+    });
 
     return res.json({
       success: true,

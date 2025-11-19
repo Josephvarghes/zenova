@@ -16,6 +16,6 @@
 # storage
 /storage/*.key*  
 
-/.babelrc  
+.babelrc  
 
 

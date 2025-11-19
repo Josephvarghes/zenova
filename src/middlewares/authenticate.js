@@ -36,6 +36,7 @@ import httpStatus from 'http-status';
 
 // ✅ This callback only checks if JWT is valid
 const verifyCallback = (req, resolve, reject) => async (err, user, info) => {
+
   if (err || info || !user) {
     // Return standard Zenova error format directly
     return resolve({
@@ -55,6 +56,9 @@ const verifyCallback = (req, resolve, reject) => async (err, user, info) => {
 
 // ✅ Main authentication middleware
 const authenticate = () => async (req, res, next) => {
+  const token = req.headers.authorization?.split(" ")[1];
+
+
   const result = await new Promise((resolve, reject) => {
     passport.authenticate(
       'jwt',                     // Strategy name
@@ -76,4 +80,6 @@ const authenticate = () => async (req, res, next) => {
   next();
 };
 
-export default authenticate;
+export default authenticate; 
+
+

@@ -38,6 +38,12 @@ if (error) {
 }
 
 export default {
+    FCM_PROJECT_ID: process.env.FCM_PROJECT_ID, 
+	FCM_CLIENT_EMAIL: process.env.FCM_CLIENT_EMAIL,
+	FCM_PRIVATE_KEY: process.env.FCM_PRIVATE_KEY,
+	FCM_SERVER_KEY: process.env.FCM_SERVER_KEY,
+	OPENROUTER_API_KEY: process.env.OPENROUTER_API_KEY, 
+	ELEVENLABS_API_KEY:process.env.ELEVENLABS_API_KEY,
 	NODE_ENV: env.NODE_ENV,
 	APP_NAME: env.APP_NAME,
 	HOST: env.HOST,
