@@ -35,7 +35,7 @@ app.use(express.static('public'));
 app.get("/", 
 	(req,res)=>{
 	return res.json({
-		status:"ok",
+		status:200,
 		data:"It's live"
    })})
 app.use('/api', routes);
