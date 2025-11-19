@@ -8,6 +8,7 @@ let server;
 
 mongoose.Promise = global.Promise;
 
+   
 const db = mongoose.connection;
 
 db.on('connecting', () => {
@@ -37,7 +38,7 @@ const connect = async () => {
 		logger.info('🚀 Connected to MongoDB end!');
 		await initialData();
 		logger.info('🚀 Initial MongoDB!');
-
+		
 		const port = config.PORT || 5000;
 		server = app.listen(port, '0.0.0.0', () => {
   			logger.info(`🚀 Server running on port ${port}`);
@@ -54,6 +55,7 @@ const connect = async () => {
 };
 
 connect();
+
 
 const exitHandler = () => {
 	if (server) {
