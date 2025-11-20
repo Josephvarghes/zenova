@@ -301,10 +301,150 @@ export const createExercise = async (req, res) => {
   }
 };
 
+export const getWorkoutPlan = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    // Get latest plan (you may want to filter by active status later)
+    const plan = await WorkoutPlan.findOne({ userId }).sort({ createdAt: -1 });
+
+    return res.json({
+      success: true,
+      data:{plan} || null,
+      message: 'Workout plan fetched successfully',
+    });
+  } catch (err) {
+    return res.status(400).json({
+      success: false,
+       data:{},
+      message: err.message || 'Failed to fetch workout plan',
+    });
+  }
+};
+
+// ✅ Get single day's workout log
+export const getWorkoutLog = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { date } = req.query;
+
+    if (!date) {
+      return res.status(400).json({
+        success: false,
+         data:{},
+        message: 'Date is required (YYYY-MM-DD)',
+      });
+    }
+
+    const logDate = new Date(date);
+    const log = await WorkoutLog.findOne({ 
+      userId, 
+      loggedAt: { 
+        $gte: logDate, 
+        $lt: new Date(logDate.getTime() + 24 * 60 * 60 * 1000) 
+      } 
+    });
+
+    return res.json({
+      success: true,
+       data:{log} || null,
+      message: 'Workout log fetched successfully',
+    });
+  } catch (err) {
+    return res.status(400).json({
+      success: false,
+       data:{},
+      message: err.message || 'Failed to fetch workout log',
+    });
+  }
+};
+
+// ✅ Get workout logs (history)
+export const getWorkoutLogs = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { range = 'weekly' } = req.query;
+
+    let start, end;
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+    if (range === 'weekly') {
+      start = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+      end = today;
+    } else if (range === 'monthly') {
+      start = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
+      end = today;
+    } else {
+      start = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+      end = today;
+    }
+
+    const logs = await WorkoutLog.find({
+      userId,
+      loggedAt: { $gte: start, $lte: end },
+    }).sort({ loggedAt: -1 });
+
+    return res.json({
+      success: true,
+       data:{
+        logs,
+        range,
+        startDate: start.toISOString().split('T')[0],
+        endDate: end.toISOString().split('T')[0],
+      },
+      message: 'Workout logs fetched successfully',
+    });
+  } catch (err) {
+    return res.status(400).json({
+      success: false,
+       data:{},
+      message: err.message || 'Failed to fetch workout logs',
+    });
+  }
+};
+
+// ✅ Get workout streak
+export const getWorkoutStreak = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    // Get user's streak from profile (you already track this in streakService)
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        data: {},
+        message: 'User not found',
+      });
+    }
+
+    return res.json({
+      success: true,
+       data:{
+        currentStreak: user.streakDays || 0,
+        lastStreakDate: user.lastStreakDate,
+      },
+      message: 'Workout streak fetched successfully',
+    });
+  } catch (err) {
+    return res.status(400).json({
+      success: false,
+       data:{},
+      message: err.message || 'Failed to fetch workout streak',
+    });
+  }
+};
+
+
 export default {
   getExerciseLibrary,
   createWorkoutPlan,
   logWorkout,
   getWorkoutProgress,
-  createExercise
+  createExercise, 
+  getWorkoutPlan, 
+  getWorkoutLog,  
+  getWorkoutLogs, 
+  getWorkoutStreak,
 };

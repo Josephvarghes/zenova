@@ -13,5 +13,9 @@ router.post('/plan', authenticate(), validate(workoutValidation.createWorkoutPla
 router.post('/log', authenticate(), validate(workoutValidation.logWorkout), catchAsync(workoutController.logWorkout));
 router.get('/progress', authenticate(), validate(workoutValidation.getWorkoutProgress), catchAsync(workoutController.getWorkoutProgress));
 
+router.get('/plan', authenticate(), catchAsync(workoutController.getWorkoutPlan));
+router.get('/log', authenticate(),  catchAsync(workoutController.getWorkoutLog));
+router.get('/logs', authenticate(), catchAsync(workoutController.getWorkoutLogs));
+router.get('/streak', authenticate(), catchAsync(workoutController.getWorkoutStreak));
 
 export default router;
