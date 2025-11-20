@@ -12,6 +12,8 @@ import startNotificationScheduler from './services/notificationScheduler';
 
 const app = express();
 
+
+
 if (config.NODE_ENV !== 'test') {
 	app.use(morgan);
 }
@@ -29,6 +31,13 @@ app.use(cors());
 app.use(rateLimiter);
 app.use(passport.initialize());
 app.use(express.static('public'));
+
+app.get("/", 
+	(req,res)=>{
+	return res.json({
+		status:200,
+		data:"It's live"
+   })})
 app.use('/api', routes);
 
 app.use(error.converter);

@@ -11,6 +11,7 @@ services:
       - back_tier
   api_server:
     container_name: API_Server_Container
+    image: moinaknaskar/zenova:latest
     build: .
 
     networks:
