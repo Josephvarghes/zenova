@@ -27,7 +27,7 @@ export const getExerciseLibrary = async (req, res) => {
 
     return res.json({
       success: true,
-       exercises,
+      data:{exercises},
       message: 'Exercise library fetched successfully',
     });
   } catch (err) {

@@ -18,7 +18,8 @@ import chatRoutes from './chatRoutes';
 import notificationRoutes from './notificationRoutes';
 import medicineRoutes from './medicineRoutes'; 
 import habitRoutes from './habitRoutes'
-import readingRoutes from './readingRoutes';
+import readingRoutes from './readingRoutes'; 
+import measurementRoutes from './measurementRoutes';
 
 const router = Router();
 
@@ -41,6 +42,7 @@ router.use('/chat', chatRoutes);
 router.use('/notification', notificationRoutes);
 router.use('/medicine', medicineRoutes);
 router.use('/habit', habitRoutes); 
-router.use('/reading', readingRoutes); 
+router.use('/reading', readingRoutes);  
+router.use('/measurement', measurementRoutes);
 
 export default router;
