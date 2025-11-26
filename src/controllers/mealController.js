@@ -149,7 +149,7 @@ export const generateGroceryList = async (req, res) => {
       const date = new Date(today.getFullYear(), today.getMonth(), today.getDate());
       mealPlan = await MealPlan.findOne({ userId, date });
       if (!mealPlan) {
-        return res.status(404).json({
+        return res.status(200).json({
           success: false,
           data: {},
           message: 'No meal plan found for today. Generate one first.',
